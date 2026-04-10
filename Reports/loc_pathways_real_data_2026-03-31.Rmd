@@ -58,6 +58,7 @@ library("summarytools")
 library("ggplot2")
 library("jtools")
 library("flextable")
+library("psych")
 r_refs("r-references.bib")
 
 #Set working directory to loc_pathways/Reports
@@ -307,15 +308,132 @@ dat_plot <- ggplot(dat_long, aes(pathway_final, loc, fill = wave)) +
         labels = c("t1_loc" = "Wave 1", "t2_loc" = "Wave 2", "t3_loc" = "Wave 3", "t4_loc" = "Wave 4")
       ) +
   labs(fill = "Wave")
-
-mean_data <- dat_long %>%
-  group_by(wave, loc) %>%
-  summarise(
-    mean_loc = mean(loc, na.rm = TRUE),
-    se_loc = se(loc)
-  )
 ```
 
-```{r planned comparisons}
+```{r dependent samples t-tests}
+#Uncertain
+uncertain_t_test <- uncertain_dat %>% 
+  select(t1_loc, t4_loc)
 
+mean(uncertain_t_test$t1_loc)
+mean(uncertain_t_test$t4_loc)
+  
+uncertain_results <- t.test(uncertain_t_test$t1_loc, uncertain_t_test$t4_loc, paired = TRUE)
+print(uncertain_results)
+
+#Discovery
+discovery_t_test <- discovery_dat %>% 
+  select(t1_loc, t4_loc)
+  
+mean(discovery_t_test$t1_loc)
+mean(discovery_t_test$t4_loc)
+
+discovery_results <- t.test(discovery_t_test$t1_loc, discovery_t_test$t4_loc, paired = TRUE)
+print(discovery_results)
+
+#Redirect
+redirect_t_test <- redirect_dat %>% 
+  select(t1_loc, t4_loc)
+
+mean(redirect_t_test$t1_loc)
+mean(redirect_t_test$t4_loc)
+  
+redirect_results <- t.test(redirect_t_test$t1_loc, redirect_t_test$t4_loc, paired = TRUE)
+print(redirect_results)
+
+#Solidification
+solidification_t_test <- solidification_dat %>% 
+  select(t1_loc, t4_loc)
+  
+mean(solidification_t_test$t1_loc)
+mean(solidification_t_test$t4_loc)
+
+solidification_results <- t.test(solidification_t_test$t1_loc, solidification_t_test$t4_loc, paired = TRUE)
+print(solidification_results)
+
+#Certain
+certain_t_test <- certain_dat %>% 
+  select(t1_loc, t4_loc)
+  
+mean(certain_t_test$t1_loc)
+mean(certain_t_test$t4_loc)
+
+certain_results <- t.test(certain_t_test$t1_loc, certain_t_test$t4_loc, paired = TRUE)
+print(certain_results)
+```
+
+```{r exploratory}
+#Was there an overall difference in loc at t1 vs t4?
+overall_results <- t.test(dat$t1_loc, dat$t4_loc, paired = TRUE)
+print(overall_results)
+
+#Group differences in loc at t4?
+t4_dat <- dat %>% 
+  select(pathway_final, t4_loc)
+
+t4_aov <- aov(t4_loc ~ pathway_final, data = t4_dat)
+t4_sum <- summary(t4_aov)
+TukeyHSD(t4_aov)
+
+#Group differences in loc at t1?
+t1_dat <- dat %>% 
+  select(pathway_final, t1_loc)
+
+t1_aov <- aov(t1_loc ~ pathway_final, data = t1_dat)
+t1_sum <- summary(t1_aov)
+TukeyHSD(t1_aov)
+```
+
+
+```{r line graph}
+line_dat <- tribble(
+  ~pathway,    ~wave,  ~loc,
+  "Uncertain", 1, mean(uncertain_dat$t1_loc),
+  "Uncertain", 2, mean(uncertain_dat$t2_loc),
+  "Uncertain", 3, mean(uncertain_dat$t3_loc),
+  "Uncertain", 4, mean(uncertain_dat$t4_loc),
+  "Discovery", 1, mean(discovery_dat$t1_loc),
+  "Discovery", 2, mean(discovery_dat$t2_loc),
+  "Discovery", 3, mean(discovery_dat$t3_loc),
+  "Discovery", 4, mean(discovery_dat$t4_loc),
+  "Redirect", 1, mean(redirect_dat$t1_loc),
+  "Redirect", 2, mean(redirect_dat$t2_loc),
+  "Redirect", 3, mean(redirect_dat$t3_loc),
+  "Redirect", 4, mean(redirect_dat$t4_loc),
+  "Solidification", 1, mean(solidification_dat$t1_loc),
+  "Solidification", 2, mean(solidification_dat$t2_loc),
+  "Solidification", 3, mean(solidification_dat$t3_loc),
+  "Solidification", 4, mean(solidification_dat$t4_loc),
+  "Certain", 1, mean(certain_dat$t1_loc),
+  "Certain", 2, mean(certain_dat$t2_loc),
+  "Certain", 3, mean(certain_dat$t3_loc),
+  "Certain", 4, mean(certain_dat$t4_loc)
+)
+
+line_plot <- ggplot(line_dat, aes(x = wave, y = loc, color = pathway)) + 
+  geom_line() +
+  geom_point() +
+  ggtitle("Figure 2: Changes in Locus of Control Over Time by Major Pathway") +
+  xlab("Time") +
+  ylab("Locus of Control") +
+  jtools::theme_apa() +
+  theme(legend.position = "right") +
+  scale_fill_discrete(
+        labels = c("1" = "Wave 1", "2" = "Wave 2", "3" = "Wave 3", "4" = "Wave 4")
+      )
+```
+
+```{r reliability estimate}
+colnames(dat)
+t1 <- alpha(dat[, 14:18])
+print(t1) #0.57
+
+t2 <- alpha(dat[, 19:23])
+print(t2) #0.62
+
+t3 <- alpha(dat[, 24:28])
+print(t3) #0.72
+
+t4 <- alpha(dat[, 29:33])
+print(t4) #0.76
 ```
