@@ -87,10 +87,6 @@ modegender <- Mode(dat$gender, na.rm = TRUE)
 modeusborn <- Mode(dat$usborn, na.rm = TRUE)
 ```
 
-## Participants and Procedure
-
-Participants were `r nrow(dat)` undergraduate students enrolled at a large, public university in the United States. They ranged in age from `r minage` to `r maxage` years old (*M* = `r meanage`, *SD* = `r sdage`). The majority of participants identified as `r modeeid` (`r (attr(modeeid), "freq"))/(length(dat$eid_ethnicity_coded)) * 100`%) and `r tolower(modegender)` (`r (attr(modegender), "freq"))/(length(dat$gender)) * 100`%). Additionally, the majority (`r (attr(Mode(dat$usborn), "freq"))/(length(dat$usborn)) * 100`%) of participants were born in the United States. A detailed summary of participant demographics is available in Table 1.
-
 ```{r descriptive table, echo = FALSE}
 #Gender
 gender_n <- ""
@@ -299,24 +295,28 @@ dat_long <- rbind(uncertain_dat_long, discovery_dat_long, redirect_dat_long, sol
 
 dat_plot <- ggplot(dat_long, aes(pathway_final, loc, fill = wave)) +
   geom_boxplot() +
-  ggtitle("Figure 1: Changes in Locus of Control Over Time by Major Pathway") +
   xlab("Major Pathway") +
   ylab("Locus of Control") +
   jtools::theme_apa() +
   theme(legend.position = "right") +
   scale_fill_discrete(
-        labels = c("t1_loc" = "Wave 1", "t2_loc" = "Wave 2", "t3_loc" = "Wave 3", "t4_loc" = "Wave 4")
+        labels = c("t1_loc" = "Time 1", "t2_loc" = "Time 2", "t3_loc" = "Time 3", "t4_loc" = "Time 4")
       ) +
-  labs(fill = "Wave")
+  scale_x_discrete(labels = c("Certain", "Discovery", "Redirect", "Solidification", "Uncertain")) +
+  labs(fill = "Time")
+
 ```
 
-```{r dependent samples t-tests}
+```{r paired samples t-tests}
 #Uncertain
 uncertain_t_test <- uncertain_dat %>% 
   select(t1_loc, t4_loc)
 
 mean(uncertain_t_test$t1_loc)
+sd(uncertain_t_test$t1_loc)
+
 mean(uncertain_t_test$t4_loc)
+sd(uncertain_t_test$t4_loc)
   
 uncertain_results <- t.test(uncertain_t_test$t1_loc, uncertain_t_test$t4_loc, paired = TRUE)
 print(uncertain_results)
@@ -326,7 +326,10 @@ discovery_t_test <- discovery_dat %>%
   select(t1_loc, t4_loc)
   
 mean(discovery_t_test$t1_loc)
+sd(discovery_t_test$t1_loc)
+
 mean(discovery_t_test$t4_loc)
+sd(discovery_t_test$t4_loc)
 
 discovery_results <- t.test(discovery_t_test$t1_loc, discovery_t_test$t4_loc, paired = TRUE)
 print(discovery_results)
@@ -336,7 +339,10 @@ redirect_t_test <- redirect_dat %>%
   select(t1_loc, t4_loc)
 
 mean(redirect_t_test$t1_loc)
+sd(redirect_t_test$t1_loc)
+
 mean(redirect_t_test$t4_loc)
+sd(redirect_t_test$t4_loc)
   
 redirect_results <- t.test(redirect_t_test$t1_loc, redirect_t_test$t4_loc, paired = TRUE)
 print(redirect_results)
@@ -346,7 +352,10 @@ solidification_t_test <- solidification_dat %>%
   select(t1_loc, t4_loc)
   
 mean(solidification_t_test$t1_loc)
+sd(solidification_t_test$t1_loc)
+
 mean(solidification_t_test$t4_loc)
+sd(solidification_t_test$t4_loc)
 
 solidification_results <- t.test(solidification_t_test$t1_loc, solidification_t_test$t4_loc, paired = TRUE)
 print(solidification_results)
@@ -356,34 +365,14 @@ certain_t_test <- certain_dat %>%
   select(t1_loc, t4_loc)
   
 mean(certain_t_test$t1_loc)
+sd(certain_t_test$t1_loc)
+
 mean(certain_t_test$t4_loc)
+sd(certain_t_test$t4_loc)
 
 certain_results <- t.test(certain_t_test$t1_loc, certain_t_test$t4_loc, paired = TRUE)
 print(certain_results)
 ```
-
-```{r exploratory}
-#Was there an overall difference in loc at t1 vs t4?
-overall_results <- t.test(dat$t1_loc, dat$t4_loc, paired = TRUE)
-print(overall_results)
-
-#Group differences in loc at t4?
-t4_dat <- dat %>% 
-  select(pathway_final, t4_loc)
-
-t4_aov <- aov(t4_loc ~ pathway_final, data = t4_dat)
-t4_sum <- summary(t4_aov)
-TukeyHSD(t4_aov)
-
-#Group differences in loc at t1?
-t1_dat <- dat %>% 
-  select(pathway_final, t1_loc)
-
-t1_aov <- aov(t1_loc ~ pathway_final, data = t1_dat)
-t1_sum <- summary(t1_aov)
-TukeyHSD(t1_aov)
-```
-
 
 ```{r line graph}
 line_dat <- tribble(
@@ -410,17 +399,19 @@ line_dat <- tribble(
   "Certain", 4, mean(certain_dat$t4_loc)
 )
 
+levels(as.factor(line_dat$pathway))
+
 line_plot <- ggplot(line_dat, aes(x = wave, y = loc, color = pathway)) + 
   geom_line() +
   geom_point() +
-  ggtitle("Figure 2: Changes in Locus of Control Over Time by Major Pathway") +
   xlab("Time") +
   ylab("Locus of Control") +
   jtools::theme_apa() +
   theme(legend.position = "right") +
   scale_fill_discrete(
         labels = c("1" = "Wave 1", "2" = "Wave 2", "3" = "Wave 3", "4" = "Wave 4")
-      )
+      ) +
+  scale_y_continuous(limits = c(3, 4.5))
 ```
 
 ```{r reliability estimate}
@@ -437,3 +428,16 @@ print(t3) #0.72
 t4 <- alpha(dat[, 29:33])
 print(t4) #0.76
 ```
+# Method
+We used `r cite_r("r-references.bib")` for all our analyses.
+
+# Results
+
+Repeated-measures ANOVAs were conducted to test the hypotheses. ANOVAs compared locus of control scores across all four waves of data collection for each pathway. It was found that there were no significant differences between locus of control scores across timepoints for any of the pathways. Uncertain students showed no significant differences in levels of locus of control across waves (*F*(`r uncertain_df`, `r uncertain_df2`) = `r uncertain_f`, *p* = `r printp(uncertain_p)`). Similarly, no significant differences were found between any waves for the Discovery (*F*(`r discovery_df`, `r discovery_df2`) = `r discovery_f`, *p* = `r printp(discovery_p)`) or Redirect (*F*(`r redirect_df`, `r redirect_df2`) = `r redirect_f`, *p* = `r printp(redirect_p)`) pathways. There were also no significant differences found in locus of control scores for students in the Solidification pathway (*F*(`r solidification_df`, `r solidification_df2`) = `r solidification_f`, *p* = `r printp(solidification_p)`) or the Certain pathway (*F*(`r certain_df`, `r certain_df2`) = `r certain_f`, *p* = `r printp(certain_p)`). Results are shown in Figure 1.
+
+\newpage
+
+# References
+
+::: {#refs custom-style="Bibliography"}
+:::
