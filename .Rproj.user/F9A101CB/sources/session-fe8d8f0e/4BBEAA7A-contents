@@ -1,0 +1,340 @@
+---
+title             : "Changes in Locus of Control Orientation Across College Major Pathways
+"
+shorttitle        : "Locus of Control and Major Pathways"
+
+author: 
+  - name          : "Varsha Venkatesh"
+    affiliation   : "1"
+    corresponding : yes    # Define only one corresponding author
+    address       : "75 E River Pkwy, Minneapolis, MN 55455"
+    email         : "venka288@umn.edu"
+    role: # Contributorship roles (e.g., CRediT, https://credit.niso.org/)
+      - "Conceptualization"
+      - "Writing - Original Draft Preparation"
+      - "Writing - Review & Editing"
+  - name          : "Moin Syed"
+    affiliation   : "1"
+    role:
+      - "Writing - Review & Editing"
+      - "Supervision"
+
+affiliation:
+  - id            : "1"
+    institution   : "University of Minnesota"
+
+authornote: |
+
+abstract: |
+  Choosing a college major is among the most important and difficult decisions that a student makes in their career. The present study seeks to better understand how feelings of control and agency can impact this choice. In particular, we do so by examining how locus of control changes among undergraduate students over the course of the first two years of college and how these patterns vary across different major pathways. The current student expands upon past research in three major ways. Firstly, previous studies of college student major choice more broadly compare undecided and decided students as opposed to narrower paths toward college major choice. Secondly, most previous studies of major choice examine group differences at one timepoint, rather than longitudinally. Finally, while locus of control has been extensively studied, there is a dearth of research on how locus of control changes over time, particularly among undergraduate students. Based on past studies of locus of control and decision-making as well as Baxter Magolda’s theory of self-authorship, we hypothesized that across the five major pathways measured in this study (uncertain, discovery, redirect, solidification, and certain), we would observe varied longitudinal patterns of locus of control.
+
+  
+  <!-- https://tinyurl.com/ybremelq -->
+  
+keywords          : "College major choice, undergraduate students, locus of control, self-authorship"
+wordcount         : "542"
+
+bibliography      : ["references.bib", "r-references.bib"]
+
+floatsintext      : yes
+linenumbers       : no
+draft             : no
+mask              : no
+
+figurelist        : no
+tablelist         : no
+footnotelist      : no
+
+classoption       : "man"
+output            : papaja::apa6_pdf
+---
+
+```{r setup, include = FALSE}
+library("papaja")
+library("DescTools")
+library("tidyr")
+library("dplyr")
+library("summarytools")
+library("ggplot2")
+r_refs("r-references.bib")
+
+#Set working directory to loc_pathways/Reports
+dat <- read.csv("../Data/loc_pathways_simulated_data_2025-11-08.csv")
+```
+
+```{r analysis-preferences}
+#Seed for random number generation
+set.seed(42)
+knitr::opts_chunk$set(cache.extra = knitr::rand_seed)
+```
+
+Picking an undergraduate major, while always an important decision, has become increasingly complicated over the years. With an ever-changing job market and an expanding selection of academic programs, students have many external factors to consider when making this life-altering choice. Additionally, students must examine internal characteristics, such as skills, values, and interests. However, how students make this decision varies from person to person. While some students enter college confident in their choice and stick with it till graduation, many others come in undeclared or change their major at some point in their undergraduate career. These different ways of arriving at a college major, or major pathways, outline different patterns of decision-making that demand further investigation.
+
+The present study seeks to better understand how feelings of control and agency impact academic decision-making. In particular, we do so by examining how locus of control changes among undergraduate students over the course of the first two years of college and how these patterns vary across different major pathways. The current student expands upon past research in three major ways. Firstly, previous studies of college student major choice more broadly compare undecided and decided students [@gordon1998; @rose1971; @spight2024] as opposed to narrower paths toward college major choice. Secondly, most previous studies of major choice examine group differences during a student’s freshman year [@rose1971; @spight2024], rather than longitudinally. Finally, while locus of control has been extensively studied, there is a dearth of research on how locus of control changes over time [@nowicki2018].
+
+Based on past studies of locus of control and decision-making as well as self-authorship theory [@magolda2023], we hypothesize that across the five major pathways measured in this study (uncertain, discovery, redirect, solidification, and certain), we would observe varied longitudinal patterns of locus of control. As locus of control was measured continuously— with lower scores indicating externality and higher scores indicating internality— hypotheses were based on both orientation at Time 1 (T1) and change from T1 to Time 4 (T4). Specifically, we hypothesize that 1) students in the uncertain pathway will demonstrate stable external locus of control from T1 to T4, 2) students in the discovery pathway will demonstrate a shift from external locus of control to internal locus of control between T1 to T4, 3) students in the redirect pathway will show stable internal locus of control from T1 to T4, 4) students in the solidification pathway will demonstrate increased internality from T1 to T4, and 5) students in the certain pathway will show stable internal locus of control from T1 to T4.
+
+# Method
+
+## Participants and Procedure
+
+Participants were `r nrow(dat)` undergraduate students enrolled at a large, public university in the United States. They ranged in age from `r min(dat$age_sim)` to `r max(dat$age_sim)` years old (*M* = `r mean(dat$age_sim)`, *SD* = `r sd(dat$age_sim)`). The majority of participants identified as `r Mode(dat$race_sim)` (`r (attr(Mode(dat$race_sim), "freq"))/(length(dat$race_sim)) * 100`%) and `r tolower(Mode(dat$gender_sim))` (`r (attr(Mode(dat$gender_sim), "freq"))/(length(dat$gender_sim)) * 100`%). Additionally, the majority (`r (attr(Mode(dat$us_born_sim), "freq"))/(length(dat$us_born_sim)) * 100`%) of participants were born in the United States. A detailed summary of participant demographics is available in Table 1.
+
+```{r descriptive table, echo = FALSE}
+#Gender
+gender_n <- ""
+gender_p <- ""
+male_n <- sum(dat$gender_sim == "Male")
+male_p <- round((male_n/nrow(dat) * 100), digits = 2)
+female_n <- sum(dat$gender_sim == "Female")
+female_p <- round((female_n/nrow(dat) * 100), digits = 2)
+nb_n <- sum(dat$gender_sim == "Nonbinary")
+nb_p <- round((nb_n/nrow(dat) * 100), digits = 2)
+
+#Race
+race_n <- ""
+race_p <- ""
+asian_n <- sum(dat$race_sim == "Asian/Pacific Islander")
+asian_p <- round((asian_n/nrow(dat) * 100), digits = 2)
+black_n <- sum(dat$race_sim == "Black/African American")
+black_p <- round((black_n/nrow(dat) * 100), digits = 2)
+latin_n <- sum(dat$race_sim == "Hispanic/Latine")
+latin_p <- round((latin_n/nrow(dat) * 100), digits = 2)
+multi_n <- sum(dat$race_sim == "Multiracial")
+multi_p <- round((multi_n/nrow(dat) * 100), digits = 2)
+native_n <- sum(dat$race_sim == "Native American")
+native_p <- round((native_n/nrow(dat) * 100), digits = 2)
+other_race_n <- sum(dat$race_sim == "Other")
+other_race_p <- round((other_race_n/nrow(dat) * 100), digits = 2)
+
+#US-Born
+row_us_born_n <- ""
+row_us_born_p <- ""
+us_born_n <- sum(dat$us_born_sim == 1)
+us_born_p <- round((us_born_n/nrow(dat) * 100), digits = 2)
+not_us_born_n <- sum(dat$us_born_sim == 0)
+not_us_born_p <- round((not_us_born_n/nrow(dat) * 100), digits = 2)
+
+#Making demographic table
+dem_table <- tribble(
+    ~Characteristic, ~n, ~`%`,
+    "Gender", gender_n, gender_p,
+    "     Male", as.factor(male_n), as.factor(male_p),
+    "     Female", as.factor(female_n), as.factor(female_p),
+    "     Nonbinary", as.factor(nb_n), as.factor(nb_p),
+    "Race", race_n, race_p,
+    "     Asian/Pacific Islander", as.factor(asian_n), as.factor(asian_p),
+    "     Black/African American", as.factor(black_n), as.factor(black_p),
+    "     Hispanic/Latine", as.factor(latin_n), as.factor(latin_p),
+    "     Multiracial", as.factor(multi_n), as.factor(multi_p),
+    "     Native American", as.factor(native_n), as.factor(native_p),
+    "     Other", as.factor(other_race_n), as.factor(other_race_p),
+    "Birthplace", row_us_born_n, row_us_born_p,
+    "     Born in the US", as.factor(us_born_n), as.factor(us_born_p),
+    "     Not Born in the US", as.factor(not_us_born_n), as.factor(not_us_born_p)
+    )
+
+table_1_caption <- "N = 96. Participants were 18.91 years old on average (SD = 1.15)"
+
+apa_table(dem_table, 
+          caption = "Sociodemographic Characteristics of Participants", 
+          align = NULL, 
+          digits = 2, 
+          note = table_1_caption)
+```
+
+Participants were recruited through a multicultural orientation event, with the first wave of data collection occurring prior to their first semester of college and the final wave occurring during the second semester of their sophomore year. They completed the first wave of the study as part of student orientation. The following three waves of the study were sent via email, and participants received \$7 per completed follow-up survey. Those who participated in at least three waves of the survey were included in analyses.
+
+## Materials
+
+### College Major Pathway
+
+College major pathways were coded based on participant self-reported narratives about their path to choosing a college major. Students were assigned one of five pathways: Uncertain (uncertain of their major from T1 to T4), Discovery (undecided at T1, chose major by T4), Redirect (changed major between T1 and T4), Solidification (unsure about initial major at T1, certain about same major at T4), and Certain (certain about same major from T1 to T4).
+
+### Locus of Control
+
+Locus of control was measured through the Internal Locus of Control subscale of the 20-item version of the Multi-Measure Agentic Personality Scale (MAPS20) [@côté2016]. Participants responded to five items on a 5-point Likert scale ranging from 1 (Strongly Disagree) to 5 (Strongly Agree), with higher scores indicating higher internal locus of control.
+
+## Data analysis
+
+We used `r cite_r("r-references.bib")` for all our analyses.
+
+Locus of control scores at each timepoint were calculated by averaging scores across the five items on the Internal Locus of Control subscale. Repeated-measures ANOVAs were conducted for each pathway to examine differences in locus of control orientation between time points. Additionally, Tukey's Honestly Significant Difference (HSD) post-hoc tests were conducted to examine differences between waves.
+
+```{r data analysis, include = FALSE}
+#Making columns with loc scores
+dat$w1_loc_sim <- rowMeans(dat[, c("w1_loc_1_sim", "w1_loc_2_sim", "w1_loc_3_sim", "w1_loc_4_sim", "w1_loc_5_sim")], na.rm = TRUE)
+
+dat$w2_loc_sim <- rowMeans(dat[, c("w2_loc_1_sim", "w2_loc_2_sim", "w2_loc_3_sim", "w2_loc_4_sim", "w2_loc_5_sim")], na.rm = TRUE)
+
+dat$w3_loc_sim <- rowMeans(dat[, c("w3_loc_1_sim", "w3_loc_2_sim", "w3_loc_3_sim", "w3_loc_4_sim", "w3_loc_5_sim")], na.rm = TRUE)
+
+dat$w4_loc_sim <- rowMeans(dat[, c("w4_loc_1_sim", "w4_loc_2_sim", "w4_loc_3_sim", "w4_loc_4_sim", "w4_loc_5_sim")], na.rm = TRUE)
+
+#Making subsets per pathway
+uncertain_dat <- dat %>% 
+  filter(dat$pathway_sim == "Uncertain")
+
+discovery_dat <- dat %>% 
+  filter(dat$pathway_sim == "Discovery")
+
+redirect_dat <- dat %>% 
+  filter(dat$pathway_sim == "Redirect")
+
+solidification_dat <- dat %>% 
+  filter(dat$pathway_sim == "Solidification")
+
+certain_dat <- dat %>% 
+  filter(dat$pathway_sim == "Certain")
+
+#Uncertain pathway: pivot, anova, plot
+uncertain_dat_long <- pivot_longer(uncertain_dat,
+                                 31:34,
+                                 names_to = "wave",
+                                 values_to = "loc")
+
+uncertain_aov <- aov(loc ~ wave, data = uncertain_dat_long)
+uncertain_sum <- summary(uncertain_aov)
+uncertain_f <- uncertain_sum[[1]][["F value"]][1]
+uncertain_p <- uncertain_sum[[1]][["Pr(>F)"]][1]
+uncertain_df <- uncertain_sum[[1]][["Df"]][1]
+uncertain_df2 <- uncertain_sum[[1]][["Df"]][2]
+TukeyHSD(uncertain_aov)
+
+uncertain_plot <- ggplot(uncertain_dat_long, aes(wave, loc, fill = wave)) +
+  geom_boxplot() +
+  ggtitle("Uncertain Pathway: Changes in Locus of Control") +
+  xlab("Wave") +
+  ylab("Locus of Control") +
+  scale_x_discrete(labels = c("Wave 1", "Wave 2", "Wave 3", "Wave 4")) +
+  theme_apa() +
+  theme(legend.position = "none")
+
+#Discovery pathway: pivot, aov, plot
+discovery_dat_long <- pivot_longer(discovery_dat,
+                                 31:34,
+                                 names_to = "wave",
+                                 values_to = "loc")
+
+discovery_aov <- aov(loc ~ wave, data = discovery_dat_long)
+discovery_sum <- summary(discovery_aov)
+discovery_f <- discovery_sum[[1]][["F value"]][1]
+discovery_p <- discovery_sum[[1]][["Pr(>F)"]][1]
+discovery_df <- discovery_sum[[1]][["Df"]][1]
+discovery_df2 <- discovery_sum[[1]][["Df"]][2]
+TukeyHSD(discovery_aov)
+
+discovery_plot <- ggplot(discovery_dat_long, aes(wave, loc, fill = wave)) +
+  geom_boxplot() +
+  ggtitle("Discovery Pathway: Changes in Locus of Control") +
+  xlab("Wave") +
+  ylab("Locus of Control") +
+  scale_x_discrete(labels = c("Wave 1", "Wave 2", "Wave 3", "Wave 4")) +
+  theme_apa() +
+  theme(legend.position = "none")
+
+discovery_dat_long <- pivot_longer(discovery_dat,
+                                 31:34,
+                                 names_to = "wave",
+                                 values_to = "loc")
+
+#Redirect pathway: pivot, aov, plot
+redirect_dat_long <- pivot_longer(redirect_dat,
+                                 31:34,
+                                 names_to = "wave",
+                                 values_to = "loc")
+
+redirect_aov <- aov(loc ~ wave, data = redirect_dat_long)
+redirect_sum <- summary(redirect_aov)
+redirect_f <- redirect_sum[[1]][["F value"]][1]
+redirect_p <- redirect_sum[[1]][["Pr(>F)"]][1]
+redirect_df <- redirect_sum[[1]][["Df"]][1]
+redirect_df2 <- redirect_sum[[1]][["Df"]][2]
+TukeyHSD(redirect_aov)
+
+redirect_plot <- ggplot(redirect_dat_long, aes(wave, loc, fill = wave)) +
+  geom_boxplot() +
+  ggtitle("Redirect Pathway: Changes in Locus of Control") +
+  xlab("Wave") +
+  ylab("Locus of Control") +
+  scale_x_discrete(labels = c("Wave 1", "Wave 2", "Wave 3", "Wave 4")) +
+  theme_apa() +
+  theme(legend.position = "none")
+
+#Solidification pathway: pivot, aov, plot
+solidification_dat_long <- pivot_longer(solidification_dat,
+                                 31:34,
+                                 names_to = "wave",
+                                 values_to = "loc")
+
+solidification_aov <- aov(loc ~ wave, data = solidification_dat_long)
+solidification_sum <- summary(solidification_aov)
+solidification_f <- solidification_sum[[1]][["F value"]][1]
+solidification_p <- solidification_sum[[1]][["Pr(>F)"]][1]
+solidification_df <- solidification_sum[[1]][["Df"]][1]
+solidification_df2 <- solidification_sum[[1]][["Df"]][2]
+TukeyHSD(solidification_aov)
+
+solidification_plot <- ggplot(solidification_dat_long, aes(wave, loc, fill = wave)) +
+  geom_boxplot() +
+  ggtitle("Solidification Pathway: Changes in Locus of Control") +
+  xlab("Wave") +
+  ylab("Locus of Control") +
+  scale_x_discrete(labels = c("Wave 1", "Wave 2", "Wave 3", "Wave 4")) +
+  theme_apa() +
+  theme(legend.position = "none")
+
+#Certain pathway: pivot, aov, plot
+certain_dat_long <- pivot_longer(certain_dat,
+                                 31:34,
+                                 names_to = "wave",
+                                 values_to = "loc")
+
+certain_aov <- aov(loc ~ wave, data = certain_dat_long)
+certain_sum <- summary(certain_aov)
+certain_f <- certain_sum[[1]][["F value"]][1]
+certain_p <- certain_sum[[1]][["Pr(>F)"]][1]
+certain_df <- certain_sum[[1]][["Df"]][1]
+certain_df2 <- certain_sum[[1]][["Df"]][2]
+TukeyHSD(certain_aov)
+
+certain_plot <- ggplot(certain_dat_long, aes(wave, loc, fill = wave)) +
+  geom_boxplot() +
+  ggtitle("Certain Pathway: Changes in Locus of Control") +
+  xlab("Wave") +
+  ylab("Locus of Control") +
+  scale_x_discrete(labels = c("Wave 1", "Wave 2", "Wave 3", "Wave 4")) +
+  theme_apa() +
+  theme(legend.position = "none")
+
+#I will try to join all 5 dataframes and facet_wrap to make one chart with all 5 boxplots
+dat_long <- rbind(uncertain_dat_long, discovery_dat_long, redirect_dat_long, solidification_dat_long, certain_dat_long)
+
+dat_plot <- ggplot(dat_long, aes(pathway_sim, loc, fill = wave)) +
+  geom_boxplot() +
+  ggtitle("Figure 1: Changes in Locus of Control Over Time by Major Pathway") +
+  xlab("Major Pathway") +
+  ylab("Locus of Control") +
+  theme_apa() +
+  theme(legend.position = "right") +
+  scale_fill_discrete(
+        labels = c("w1_loc_sim" = "Wave 1", "w2_loc_sim" = "Wave 2", "w3_loc_sim" = "Wave 3", "w4_loc_sim" = "Wave 4")
+      ) +
+  labs(fill = "Wave")
+```
+
+# Results
+
+Repeated-measures ANOVAs were conducted to test the hypotheses. ANOVAs compared locus of control scores across all four waves of data collection for each pathway. It was found that there were no significant differences between locus of control scores across timepoints for any of the pathways. Uncertain students showed no significant differences in levels of locus of control across waves (*F*(`r uncertain_df`, `r uncertain_df2`) = `r uncertain_f`, *p* = `r printp(uncertain_p)`). Similarly, no significant differences were found between any waves for the Discovery (*F*(`r discovery_df`, `r discovery_df2`) = `r discovery_f`, *p* = `r printp(discovery_p)`) or Redirect (*F*(`r redirect_df`, `r redirect_df2`) = `r redirect_f`, *p* = `r printp(redirect_p)`) pathways. There were also no significant differences found in locus of control scores for students in the Solidification pathway (*F*(`r solidification_df`, `r solidification_df2`) = `r solidification_f`, *p* = `r printp(solidification_p)`) or the Certain pathway (*F*(`r certain_df`, `r certain_df2`) = `r certain_f`, *p* = `r printp(certain_p)`). Results are shown in Figure 1.
+
+```{r boxplot, echo = FALSE}
+knitr::opts_chunk$set(fig.align = 'left')
+dat_plot
+```
+
+\newpage
+
+# References
+
+::: {#refs custom-style="Bibliography"}
+:::
